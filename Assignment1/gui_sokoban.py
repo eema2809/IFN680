@@ -11,6 +11,8 @@ from sokoban import Warehouse
 
 #test 3
 
+# test4
+
 # Written by f.maire@qut.edu.au using icon images from Risto Stevcev.
 # Last modified on 2022/05/2
 # fix the inconsistency of the capitalization of 'impossible'
