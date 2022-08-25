@@ -7,6 +7,8 @@ import os
 
 from sokoban import Warehouse
 
+#Test
+
 # Written by f.maire@qut.edu.au using icon images from Risto Stevcev.
 # Last modified on 2022/05/2
 # fix the inconsistency of the capitalization of 'impossible'
@@ -31,7 +33,7 @@ app_root_folder = os.getcwd()
 
 # creating tkinter root/main window
 root_window = tk.Tk()
-root_window.geometry('550x180')
+root_window.geometry('540x180')
 
 # tk.Frame containing the warehouse
 frame = tk.Frame(master=root_window)
