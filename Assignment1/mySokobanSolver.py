@@ -83,6 +83,63 @@ class SokobanPuzzle(search.Problem):
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+
+def move(action):
+    '''
+    Movement in coordiantes (x,y).
+    
+    @param action: a string representing an action.
+            For example, 'Left'.
+            
+    @return
+        The (x, y) coordinates for a given action.
+            For example, if the action is 'Left' it returns (-1, 0)
+    '''
+    
+    direction = {'Left' :(-1,0), 'Right':(1,0) , 'Up':(0,-1), 'Down':(0,1)} # (x,y) = (column,row)
+    return direction[action]
+
+
+def check_action(position, warehouse, action):
+    '''
+    Checking if action is impossible, if not applies action.
+    
+    @param warehous: a valid Warehouse object
+    
+    @param action: a string representing an action.
+            For example, 'Left'.
+    
+    @return
+        The string 'Impossible', if the action is not valid.
+           For example, if the agent tries to push two boxes at the same time,
+                        or push a box into a wall.
+        Otherwise, if the action is succesful, the action is applied.
+    '''
+    
+    pos = position
+    new_pos = (pos[0] + move(action)[0], pos[1] + move(action)[1])
+ 
+ 
+        
+    #checking if worker hits a wall
+    if new_pos in warehouse.walls:
+        return 'Impossible'
+    elif new_pos in warehouse.boxes:
+        new_box_pos = (new_pos[0] + move(action)[0], new_pos[1] + move(action)[1])
+        if new_box_pos not in warehouse.boxes and new_box_pos not in warehouse.boxes:
+            warehouse.boxes.remove(new_pos)
+            warehouse.boxes.append(new_box_pos)
+            pos = new_pos
+        else:
+            return 'Impossible'
+    else:
+        pos = new_pos
+    return pos
+    print(warehouse.worker)
+    
+
+    
+
 def check_elem_action_seq(warehouse, action_seq):
     '''
     
@@ -108,8 +165,17 @@ def check_elem_action_seq(warehouse, action_seq):
     '''
     
     ##         "INSERT YOUR CODE HERE"
-    
-    raise NotImplementedError()
+    pos = warehouse.worker
+        
+    for action in action_seq:
+        print(action)
+        pos = check_action(pos, warehouse, action)
+        if pos == 'Impossible':
+            return pos
+
+    warehouse.worker = pos           
+        
+    return warehouse.__str__()
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
