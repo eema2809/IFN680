@@ -46,7 +46,7 @@ def my_team():
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-
+# state - position of worker and boxes (dynamic)
 
 class SokobanPuzzle(search.Problem):
     '''
@@ -72,14 +72,51 @@ class SokobanPuzzle(search.Problem):
 
     
     def __init__(self, warehouse):
-        raise NotImplementedError()
+        self.warehouse = warehouse
+        self.state = (warehouse.worker, warehouse.boxes)
 
     def actions(self, state):
         """
         Return the list of legal actions that can be executed in the given state.
         
         """
-        raise NotImplementedError
+        position = state[0]
+        
+        warehouse = self.warehouse
+        
+        L = []
+     
+        direction = {'Left' :(-1,0), 'Right':(1,0) , 'Up':(0,-1), 'Down':(0,1)} # (x,y) = (column,row)
+        pos = state[0]
+        pos_boxes = state[1]
+        
+        for key in direction:
+            new_pos = (pos[0] + move(key)[0], pos[1] + move(key)[1])
+            #checking if worker hits a wall
+            if new_pos in pos_boxes:
+                new_box_pos = (new_pos[0] + move(key)[0], new_pos[1] + move(key)[1])
+                if new_box_pos not in pos_boxes and new_box_pos not in warehouse.walls:
+                    state[1].remove(new_pos)
+                    state[1].append(new_box_pos)
+                    pos = new_pos
+                    L.append(get_key(direction, move(key)))
+                
+            elif new_pos not in warehouse.walls:
+                pos = new_pos
+                L.append(get_key(direction, move(key)))
+    
+        return L
+   
+    def result(self, state, action):
+        """Return the state that results from executing the given
+        action in the given state. The action must be one of
+        self.actions(state)."""
+        
+        if action in self.actions(state):
+            return state[0] + move(action)
+        if action in self.actions(state) and state[0]+move(action) in state[1]:
+            return state[1] + move(action)
+        
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -98,6 +135,13 @@ def move(action):
     
     direction = {'Left' :(-1,0), 'Right':(1,0) , 'Up':(0,-1), 'Down':(0,1)} # (x,y) = (column,row)
     return direction[action]
+
+def get_key(my_dict, val):
+    for key, value in my_dict.items():
+        if val == value:
+            return key
+ 
+    return "key doesn't exist"
 
 
 def check_action(position, warehouse, action):
@@ -165,17 +209,18 @@ def check_elem_action_seq(warehouse, action_seq):
     '''
     
     ##         "INSERT YOUR CODE HERE"
-    pos = warehouse.worker
+    
+    
+    new_wh = warehouse.copy(warehouse.worker, warehouse.boxes)
+    sp = SokobanPuzzle(new_wh)
         
     for action in action_seq:
-        print(action)
-        pos = check_action(pos, warehouse, action)
-        if pos == 'Impossible':
-            return pos
-
-    warehouse.worker = pos           
+        if action in sp.actions(sp.state):
+            sp.result(sp.state, action)
+        else:
+            return "Impossible"        
         
-    return warehouse.__str__()
+    return sp.warehouse.__str__()
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
