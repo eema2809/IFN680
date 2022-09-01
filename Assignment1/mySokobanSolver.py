@@ -73,50 +73,60 @@ class SokobanPuzzle(search.Problem):
     
     def __init__(self, warehouse):
         self.warehouse = warehouse
-        self.state = (warehouse.worker, warehouse.boxes)
+       
 
     def actions(self, state):
         """
         Return the list of legal actions that can be executed in the given state.
         
         """
-        position = state[0]
-        
-        warehouse = self.warehouse
-        
+        wh = self.warehouse
+        pos = state[0]
+        box1 = state[1]
+        box2 = state[2]
         L = []
      
         direction = {'Left' :(-1,0), 'Right':(1,0) , 'Up':(0,-1), 'Down':(0,1)} # (x,y) = (column,row)
-        pos = state[0]
-        pos_boxes = state[1]
         
-        for key in direction:
-            new_pos = (pos[0] + move(key)[0], pos[1] + move(key)[1])
+        for d in direction:
+            coord = direction.get(d)
+            x = coord[0]
+            y = coord[1]
+            new_pos = (pos[0] + x, pos[1] + y)
             #checking if worker hits a wall
-            if new_pos in pos_boxes:
-                new_box_pos = (new_pos[0] + move(key)[0], new_pos[1] + move(key)[1])
-                if new_box_pos not in pos_boxes and new_box_pos not in warehouse.walls:
-                    state[1].remove(new_pos)
-                    state[1].append(new_box_pos)
-                    pos = new_pos
-                    L.append(get_key(direction, move(key)))
-                
-            elif new_pos not in warehouse.walls:
-                pos = new_pos
-                L.append(get_key(direction, move(key)))
-    
+            if new_pos == box1:
+                new_box1 = (box1[0] + x, box1[1] + y)
+                if (new_box1 != box2) and (new_box1 not in wh.walls):
+                    L.append(d)
+            elif new_pos == box2:
+                new_box2 = (box2[0] + x, box2[1] + y)
+                if (new_box2 != box1) and (new_box2 not in wh.walls):
+                    L.append(d)
+            elif new_pos not in wh.walls:
+                L.append(d)
+            
+            
         return L
    
     def result(self, state, action):
         """Return the state that results from executing the given
         action in the given state. The action must be one of
         self.actions(state)."""
+        next_state = list(state)
+        worker = next_state[0]
+        box1 = next_state[1]
+        box2 = next_state[2]
         
-        if action in self.actions(state):
-            return state[0] + move(action)
-        if action in self.actions(state) and state[0]+move(action) in state[1]:
-            return state[1] + move(action)
+        if (worker[0]+move(action)[0], worker[1]+move(action)[1]) == box1:
+            box1 = (box1[0]+move(action)[0], box1[1]+move(action)[1])
+        elif (worker[0]+move(action)[0], worker[0]+move(action)[0]) == box2:
+            box1 = (box2[0]+move(action)[0], box2[1]+move(action)[1])
+        worker = (worker[0]+move(action)[0], worker[1]+move(action)[1])
         
+        next_state = (worker, box1, box2)
+
+        
+        return next_state
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -144,42 +154,42 @@ def get_key(my_dict, val):
     return "key doesn't exist"
 
 
-def check_action(position, warehouse, action):
-    '''
-    Checking if action is impossible, if not applies action.
+# def check_action(position, warehouse, action):
+#     '''
+#     Checking if action is impossible, if not applies action.
     
-    @param warehous: a valid Warehouse object
+#     @param warehous: a valid Warehouse object
     
-    @param action: a string representing an action.
-            For example, 'Left'.
+#     @param action: a string representing an action.
+#             For example, 'Left'.
     
-    @return
-        The string 'Impossible', if the action is not valid.
-           For example, if the agent tries to push two boxes at the same time,
-                        or push a box into a wall.
-        Otherwise, if the action is succesful, the action is applied.
-    '''
+#     @return
+#         The string 'Impossible', if the action is not valid.
+#            For example, if the agent tries to push two boxes at the same time,
+#                         or push a box into a wall.
+#         Otherwise, if the action is succesful, the action is applied.
+#     '''
     
-    pos = position
-    new_pos = (pos[0] + move(action)[0], pos[1] + move(action)[1])
+#     pos = position
+#     new_pos = (pos[0] + move(action)[0], pos[1] + move(action)[1])
  
  
         
-    #checking if worker hits a wall
-    if new_pos in warehouse.walls:
-        return 'Impossible'
-    elif new_pos in warehouse.boxes:
-        new_box_pos = (new_pos[0] + move(action)[0], new_pos[1] + move(action)[1])
-        if new_box_pos not in warehouse.boxes and new_box_pos not in warehouse.boxes:
-            warehouse.boxes.remove(new_pos)
-            warehouse.boxes.append(new_box_pos)
-            pos = new_pos
-        else:
-            return 'Impossible'
-    else:
-        pos = new_pos
-    return pos
-    print(warehouse.worker)
+#     #checking if worker hits a wall
+#     if new_pos in warehouse.walls:
+#         return 'Impossible'
+#     elif new_pos in warehouse.boxes:
+#         new_box_pos = (new_pos[0] + move(action)[0], new_pos[1] + move(action)[1])
+#         if new_box_pos not in warehouse.boxes and new_box_pos not in warehouse.boxes:
+#             warehouse.boxes.remove(new_pos)
+#             warehouse.boxes.append(new_box_pos)
+#             pos = new_pos
+#         else:
+#             return 'Impossible'
+#     else:
+#         pos = new_pos
+#     return pos
+#     print(warehouse.worker)
     
 
     
@@ -211,16 +221,29 @@ def check_elem_action_seq(warehouse, action_seq):
     ##         "INSERT YOUR CODE HERE"
     
     
-    new_wh = warehouse.copy(warehouse.worker, warehouse.boxes)
-    sp = SokobanPuzzle(new_wh)
-        
+    sp = SokobanPuzzle(warehouse)
+    state = [warehouse.worker, warehouse.boxes[0], warehouse.boxes[1]] #get state from warehouse
+    L = sp.actions(state)
+
+    print(state)
+    print(L)
+    
     for action in action_seq:
-        if action in sp.actions(sp.state):
-            sp.result(sp.state, action)
+        if action in L:
+            state = sp.result(state,action)
+            print(state)
+            L = sp.actions(state)
+            print(L)
         else:
-            return "Impossible"        
+            return "Impossible"
+    
+           
         
-    return sp.warehouse.__str__()
+    new_wh = warehouse.copy(state[0], (state[1], state[2]))
+    print(warehouse.boxes)
+    print(warehouse)
+    print(new_wh.__str__())
+    return new_wh.__str__()
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
