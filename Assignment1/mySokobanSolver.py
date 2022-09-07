@@ -31,6 +31,7 @@ Last modified by 2022-03-27  by f.maire@qut.edu.au
 # with these files
 import search 
 import sokoban
+import Math
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -246,6 +247,30 @@ def check_elem_action_seq(warehouse, action_seq):
     return new_wh.__str__()
 
 
+
+def heur_manhattan_distance(warehouse, state):
+    
+    boxes = [state[1], state[2]]
+    targets = warehouse.targets
+    weights = warehouse.weights
+    h = 0
+    i = 0
+   
+    for box in boxes:
+        min_dist = float("inf")
+        for target in targets:           
+            dist = (Math.abs(target[0] - box[0]) + Math.abs(target[1] - box[1])) * (1 + weights[i]) #is it correct distance function?
+            if dist <= min_dist:
+                min_dist = dist
+        h += min_dist
+        min_dist = float("inf")
+        i+=1
+    return h
+        
+            
+        
+    
+    
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 def solve_weighted_sokoban(warehouse):
@@ -272,7 +297,7 @@ def solve_weighted_sokoban(warehouse):
 
     '''
     
-    raise NotImplementedError()
+        
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
