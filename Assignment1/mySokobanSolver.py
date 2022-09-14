@@ -31,6 +31,7 @@ Last modified by 2022-03-27  by f.maire@qut.edu.au
 import search
 import sokoban
 import time
+import os
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -85,7 +86,7 @@ class SokobanPuzzle(search.Problem):
 
     def __init__(self, warehouse):
         self.warehouse = warehouse
-        self.initial = warehouse.worker, warehouse.boxes[0], warehouse.boxes[1]
+        self.initial = warehouse.worker, tuple(warehouse.boxes)
         self.weights = warehouse.weights
         self.goal = warehouse.targets
         self.boxes = warehouse.boxes
@@ -97,9 +98,7 @@ class SokobanPuzzle(search.Problem):
 
         """
         pos = state[0]
-        box1 = state[1]
-        box2 = state[2]
-        boxes = [box1, box2]
+        boxes = list(state[1])
         L = []
 
 
@@ -122,7 +121,7 @@ class SokobanPuzzle(search.Problem):
         return L
     
     def goal_test(self, state):
-        return set(self.goal) == set([state[1], state[2]])
+        return set(self.goal) == set(state[1])
 
     def path_cost(self, c, state1, action, state2):
 
@@ -130,8 +129,9 @@ class SokobanPuzzle(search.Problem):
         returns cost from state1 to state2, where c is cost up to state1.
         """
         worker2 = state2[0]
-        boxes1 = [state1[1], state1[2]]
-        boxes2 = [state2[1], state2[2]]
+        boxes1 = state1[1]
+        boxes2 = state2[1]
+       
         if boxes1 != boxes2:
             i = boxes1.index(worker2)
             box_cost = self.weights[i]
@@ -143,7 +143,7 @@ class SokobanPuzzle(search.Problem):
     def h(self, n):
 
         worker = n.state[0]
-        boxes = [n.state[1], n.state[2]]
+        boxes = list(n.state[1])
         targets = self.goal
         weights = self.weights
 
@@ -167,7 +167,7 @@ class SokobanPuzzle(search.Problem):
         self.actions(state)."""
         
         worker = state[0]
-        boxes = [state[1], state[2]]
+        boxes = list(state[1])
          
         coord = direction.get(action)
         x = coord[0]
@@ -179,7 +179,7 @@ class SokobanPuzzle(search.Problem):
             i = boxes.index(next_worker)
             boxes[i] = next_box
         
-        return next_worker, boxes[0], boxes[1]
+        return next_worker, tuple(boxes)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -313,17 +313,41 @@ def solve_weighted_sokoban(warehouse):
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-def test_solve_weighted_sokoban():
-    wh = sokoban.Warehouse()    
-    wh.load_warehouse( "./warehouses/warehouse_81.txt")
-    # first test
-    answer, cost = solve_weighted_sokoban(wh)
 
-    expected_answer = ['Up', 'Left', 'Up', 'Left', 'Left', 'Down', 'Left', 
-                       'Down', 'Right', 'Right', 'Right', 'Up', 'Up', 'Left', 
-                       'Down', 'Right', 'Down', 'Left', 'Left', 'Right', 
-                       'Right', 'Right', 'Right', 'Right', 'Right', 'Right'] 
-    expected_cost = 431
+# TEST
+
+def test_check_elem_action_seq():
+    wh = sokoban.Warehouse()
+    wh.load_warehouse("./warehouses/warehouse_01.txt")
+    # first test
+    answer = check_elem_action_seq(wh, ['Right', 'Right','Down'])
+    expected_answer = '####  \n# .#  \n#  ###\n#*   #\n#  $@#\n#  ###\n####  '
+    print('<<  check_elem_action_seq, test 1>>')
+    if answer==expected_answer:
+        print('Test 1 passed!  :-)\n')
+    else:
+        print('Test 1 failed!  :-(\n')
+        print('Expected ');print(expected_answer)
+        print('But, received ');print(answer)
+    # second test
+    answer = check_elem_action_seq(wh, ['Right', 'Right','Right'])
+    expected_answer = 'Impossible'
+    print('<<  check_elem_action_seq, test 2>>')
+    if answer==expected_answer:
+        print('Test 2 passed!  :-)\n')
+    else:
+        print('Test 2 failed!  :-(\n')
+        print('Expected ');print(expected_answer)
+        print('But, received ');print(answer)
+
+def test_solve_weighted_sokoban(filename, expected_answer,  expected_cost):
+    wh = sokoban.Warehouse()    
+    wh.load_warehouse( "./warehouses/"+ filename)
+    # first test
+    t0 = time.time()
+    answer, cost = solve_weighted_sokoban(wh)
+    t1 = time.time()
+     
     print('<<  test_solve_weighted_sokoban >>')
     if answer==expected_answer:
         print(' Answer as expected!  :-)\n')
@@ -334,14 +358,75 @@ def test_solve_weighted_sokoban():
         print('Your answer is different but it might still be correct')
         print('Check that you pushed the right box onto the left target!')
     print(f'Your cost = {cost}, expected cost = {expected_cost}')
+    print(f'Solver took {t1-t0} seconds')
+    
+def test_all_solve_weighted_sokoban():
+   directory = './warehouses'
+   
+   for file in os.listdir(directory):
+       if (file.endswith('.txt')):
+           print('test - '+file.split('.')[0]+':')
+           
+    
+ 
+    
         
     
 
 if __name__ == "__main__":
-    pass    
-#    print(my_team())  # should print your team
-    t0 = time.time()
-    test_solve_weighted_sokoban()
-    t1 = time.time()
+
+    print(my_team())  # should print your team
     
-    print ("Solver took ",t1-t0, ' seconds')
+    test_check_elem_action_seq()
+    
+    print("test - warehouse_8a:")
+    test_solve_weighted_sokoban("warehouse_8a.txt", 
+                                ['Up', 'Left', 'Up', 'Left', 'Left', 'Down', 
+                                 'Left', 'Down', 'Right', 'Right', 'Right', 
+                                 'Up', 'Up', 'Left', 'Down', 'Right', 'Down', 
+                                 'Left', 'Left', 'Right', 'Right', 'Right', 
+                                 'Right', 'Right', 'Right', 'Right'], 431)
+    
+    print("---------------------")
+    print("test - warehouse_09:")
+    test_solve_weighted_sokoban("warehouse_09.txt", 
+                                ['Up', 'Right', 'Right', 'Down', 'Up', 'Left', 
+                                 'Left', 'Down', 'Right', 'Down', 'Right', 
+                                 'Left', 'Up', 'Up', 'Right', 'Down', 'Right',
+                                 'Down', 'Down', 'Left', 'Up', 'Right', 'Up', 
+                                 'Left', 'Down', 'Left', 'Up', 'Right', 'Up', 
+                                 'Left'], 396)
+    print("---------------------")
+    print("test - warehouse_47:")
+    test_solve_weighted_sokoban("warehouse_47.txt", 
+                                ['Right', 'Right', 'Right', 'Up', 'Up', 'Up', 
+                                 'Left', 'Left', 'Down', 'Right', 'Right', 
+                                 'Down', 'Down', 'Left', 'Left', 'Left', 
+                                 'Left', 'Up', 'Up', 'Right', 'Right', 'Up', 
+                                 'Right', 'Right', 'Right', 'Right', 'Down', 
+                                 'Left', 'Up', 'Left', 'Down', 'Down', 'Up', 
+                                 'Up', 'Left', 'Left', 'Down', 'Left', 'Left', 
+                                 'Down', 'Down', 'Right', 'Right', 'Right', 
+                                 'Right', 'Right', 'Right', 'Down', 'Right', 
+                                 'Right', 'Up', 'Left','Left', 'Left', 'Left', 
+                                 'Left', 'Left', 'Down', 'Left', 'Left', 'Up', 
+                                 'Up', 'Up', 'Right', 'Right', 'Right', 'Up', 
+                                 'Right', 'Down', 'Down', 'Up', 'Left', 'Left', 
+                                 'Left', 'Left', 'Down', 'Down', 'Down', 
+                                 'Right', 'Right', 'Up', 'Right', 'Right', 
+                                 'Left', 'Left', 'Down', 'Left', 'Left', 'Up', 
+                                 'Right', 'Right'] , 179)
+    print("---------------------")
+    print("test - warehouse_81:")
+    test_solve_weighted_sokoban("warehouse_81.txt", 
+                                ['Left', 'Up', 'Up', 'Up', 'Right', 'Right', 
+                                 'Down', 'Left', 'Down', 'Left', 'Down', 
+                                 'Down', 'Down', 'Right', 'Right', 'Up', 
+                                 'Left', 'Down', 'Left', 'Up', 'Right', 'Up', 
+                                 'Up', 'Left', 'Left', 'Down', 'Right', 'Up', 
+                                 'Right', 'Up', 'Right', 'Up', 'Up', 'Left', 
+                                 'Left', 'Down', 'Down', 'Right', 'Down', 
+                                 'Down', 'Left', 'Down', 'Down', 'Right', 'Up', 
+                                 'Up', 'Up', 'Down', 'Left', 'Left', 'Up', 
+                                 'Right']  , 376)
+    print("---------------------")
