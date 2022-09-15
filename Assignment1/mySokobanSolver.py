@@ -56,8 +56,42 @@ direction = {
  }  # (x,y) = (column,row)
 
 def manhattan_distance(pos1, pos2):
+    """
+
+    Parameters
+    ----------
+    pos1 : tuple
+        Start position (x1, y1).
+    pos2 : tuple
+        End positon (x2, y2).
+
+    Returns
+    -------
+    int
+        The value of the manhatten distance.
+
+    """
 
     return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
+
+def move(pos, movement):
+    """
+
+    Parameters
+    ----------
+    pos : tuple
+        Start position (x, y).
+    movement : tuple
+        Translation vector that moves start position in given direction.
+
+    Returns
+    -------
+    tuple
+        The destination after moving from the start position.
+
+    """
+    
+    return (pos[0] + movement[0], pos[1] + movement[1])
 
 # state - position of worker and boxes (dynamic)
 
@@ -121,6 +155,9 @@ class SokobanPuzzle(search.Problem):
         return L
     
     def goal_test(self, state):
+        """
+        returns TRUE if all the boxes has reached a goal state, otherwise FALSE
+        """
         return set(self.goal) == set(state[1])
 
     def path_cost(self, c, state1, action, state2):
@@ -170,12 +207,11 @@ class SokobanPuzzle(search.Problem):
         boxes = list(state[1])
          
         coord = direction.get(action)
-        x = coord[0]
-        y = coord[1]
-        next_worker = (worker[0] + x, worker[1] + y)
+
+        next_worker = move(worker, coord)
         
         if next_worker in boxes:
-            next_box = (next_worker[0] + x, next_worker[1] + y)
+            next_box = move(next_worker, coord)
             i = boxes.index(next_worker)
             boxes[i] = next_box
         
@@ -184,44 +220,6 @@ class SokobanPuzzle(search.Problem):
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-
-
-
-# def check_action(position, warehouse, action):
-#     '''
-#     Checking if action is impossible, if not applies action.
-
-#     @param warehous: a valid Warehouse object
-
-#     @param action: a string representing an action.
-#             For example, 'Left'.
-
-#     @return
-#         The string 'Impossible', if the action is not valid.
-#            For example, if the agent tries to push two boxes at the same time,
-#                         or push a box into a wall.
-#         Otherwise, if the action is succesful, the action is applied.
-#     '''
-
-#     pos = position
-#     new_pos = (pos[0] + move(action)[0], pos[1] + move(action)[1])
-
-
-#     #checking if worker hits a wall
-#     if new_pos in warehouse.walls:
-#         return 'Impossible'
-#     elif new_pos in warehouse.boxes:
-#         new_box_pos = (new_pos[0] + move(action)[0], new_pos[1] + move(action)[1])
-#         if new_box_pos not in warehouse.boxes and new_box_pos not in warehouse.boxes:
-#             warehouse.boxes.remove(new_pos)
-#             warehouse.boxes.append(new_box_pos)
-#             pos = new_pos
-#         else:
-#             return 'Impossible'
-#     else:
-#         pos = new_pos
-#     return pos
-#     print(warehouse.worker)
 
 
 def check_elem_action_seq(warehouse, action_seq):
@@ -254,15 +252,13 @@ def check_elem_action_seq(warehouse, action_seq):
         worker = warehouse.worker
         if action in list(direction.keys()):
             coord = direction.get(action)
-            x = coord[0]
-            y = coord[1]
             
-            next_worker = (worker[0] + x, worker[1] + y)
+            next_worker = move(worker, coord)
             
             if next_worker in warehouse.walls:
                 return 'Impossible'
             elif next_worker in warehouse.boxes:
-                next_box = (next_worker[0] + x, next_worker[1] + y)
+                next_box = move(next_worker, coord)
                 if next_box in warehouse.walls or next_box in warehouse.boxes:
                     return 'Impossible'
                 else:
@@ -360,24 +356,68 @@ def test_solve_weighted_sokoban(filename, expected_answer,  expected_cost):
     print(f'Your cost = {cost}, expected cost = {expected_cost}')
     print(f'Solver took {t1-t0} seconds')
     
-def test_all_solve_weighted_sokoban():
-   directory = './warehouses'
-   
-   for file in os.listdir(directory):
-       if (file.endswith('.txt')):
-           print('test - '+file.split('.')[0]+':')
            
     
- 
+
+
+def test_actions():
+   ''' 
+   Test to see if worker pushes two boxes, should not be possible.
+   The only possibe action should be 'Up'.
+   '''
+   wh = sokoban.Warehouse()
+   wh.load_warehouse("./warehouses/warehouse_09.txt")
+   s = SokobanPuzzle(wh)  
     
-        
+   answer = s.actions(s.initial)
+   expected_answer = ['Up']
+   print('<<  test_actions >>')
+   if answer==expected_answer:
+       print(' Answer as expected!  :-)\n')
+   else:
+       print('unexpected answer!  :-(\n')
+       print('Expected ');print(expected_answer)
+       print('But, received ');print(answer)
+       
+       
+
+def test_result(): 
+   '''
+   Test to see if worker moves 'Down' and pushes box.
+   Inital value for worker and box is (6,1) and (6,2).
+   The y-value for both worker and box should increment by 1 .
+
+   '''
+   wh = sokoban.Warehouse()
+   wh.load_warehouse("./warehouses/warehouse_15.txt")
+   s = SokobanPuzzle(wh)  
+   #state = [wh.worker, tuple(wh.boxes)]
+    
+   answer = s.result(s.initial, 'Down')
+   expected_answer = (6,2), ((6,3), (5,4))
+   print('<< test_result >>')
+   if answer==expected_answer:
+       print(' Answer as expected!  :-)\n')
+   else:
+       print('unexpected answer!  :-(\n')
+       print('Expected ');print(expected_answer)
+       print('But, received ');print(answer)
+   
     
 
 if __name__ == "__main__":
 
     print(my_team())  # should print your team
+    print("---------------------")
     
     test_check_elem_action_seq()
+    print("---------------------")
+    
+    test_actions()
+    print("---------------------")
+    
+    test_result()
+    print("---------------------")
     
     print("test - warehouse_8a:")
     test_solve_weighted_sokoban("warehouse_8a.txt", 
@@ -430,3 +470,4 @@ if __name__ == "__main__":
                                  'Up', 'Up', 'Down', 'Left', 'Left', 'Up', 
                                  'Right']  , 376)
     print("---------------------")
+    
