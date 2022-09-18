@@ -31,6 +31,7 @@ Last modified by 2022-03-27  by f.maire@qut.edu.au
 import search
 import sokoban
 import time
+import multiprocessing
 import os
 
 
@@ -402,6 +403,66 @@ def test_result():
        print('unexpected answer!  :-(\n')
        print('Expected ');print(expected_answer)
        print('But, received ');print(answer)
+       
+# def warehouse_solution(warehouse_problem):
+#     """
+#     Loop all warehouses in the test folder, and output the results to txt and csv file
+#     """
+#     with open(warehouse_problem) as f:
+#         first_line = f.readline()
+#     boxes = first_line.split(" ")
+#     head, problem_file = os.path.split(warehouse_problem)
+#     t0 = time.time()
+#     wh = sokoban.Warehouse()
+#     wh.load_warehouse(warehouse_problem)
+#     solution, cost = solve_weighted_sokoban(wh)
+#     t1 = time.time()
+
+#     with open("./solutions/overall.csv", "a+") as file:
+#         file.write(problem_file+", {}, {}, {}\n".format(t1-t0, cost, len(boxes)))
+#         file.close()
+
+        
+# def test_all():
+#     """
+#     Test for solve_weighted_sokoban()
+#     Testing for all warehouses by Automatic Timeout"""
+
+#     directory = "./warehouses"
+
+#     counts = 1
+
+#     with open("./solutions/overall.csv", "a+") as file:
+#         file.write("case,time,cost,boxes\n")
+#         file.close()
+
+#     for filename in os.listdir(directory):
+#         f = os.path.join(directory, filename)
+        
+#         if f.endswith(".txt"):
+#             print("Start test case " + filename +  " in {} of 108".format(counts))
+#             p = multiprocessing.Process(target=warehouse_solution, args=(f,))
+#             p.start()
+
+#             # Wait for 300 seconds or until process finishes
+#             p.join(120)
+
+#             if p.is_alive():
+#                 with open("./solutions/outtime.txt", 'a+') as file:
+#                     file.write(filename+"\n")
+#                     file.close()
+#                 print("Test case {} is timeout.".format(counts))
+#                 # Terminate - may not work if process is stuck for good
+#                 p.terminate()
+#                 # OR Kill - will work for sure, no chance for process to finish nicely however
+#                 # p.kill()
+            
+#             counts += 1
+            
+#         else:
+#             continue
+    
+#     print("Finish All Tests")
    
     
 
@@ -460,14 +521,17 @@ if __name__ == "__main__":
     print("test - warehouse_81:")
     test_solve_weighted_sokoban("warehouse_81.txt", 
                                 ['Left', 'Up', 'Up', 'Up', 'Right', 'Right', 
-                                 'Down', 'Left', 'Down', 'Left', 'Down', 
-                                 'Down', 'Down', 'Right', 'Right', 'Up', 
-                                 'Left', 'Down', 'Left', 'Up', 'Right', 'Up', 
-                                 'Up', 'Left', 'Left', 'Down', 'Right', 'Up', 
-                                 'Right', 'Up', 'Right', 'Up', 'Up', 'Left', 
-                                 'Left', 'Down', 'Down', 'Right', 'Down', 
-                                 'Down', 'Left', 'Down', 'Down', 'Right', 'Up', 
-                                 'Up', 'Up', 'Down', 'Left', 'Left', 'Up', 
-                                 'Right']  , 376)
+                                  'Down', 'Left', 'Down', 'Left', 'Down', 
+                                  'Down', 'Down', 'Right', 'Right', 'Up', 
+                                  'Left', 'Down', 'Left', 'Up', 'Right', 'Up', 
+                                  'Up', 'Left', 'Left', 'Down', 'Right', 'Up', 
+                                  'Right', 'Up', 'Right', 'Up', 'Up', 'Left', 
+                                  'Left', 'Down', 'Down', 'Right', 'Down', 
+                                  'Down', 'Left', 'Down', 'Down', 'Right', 'Up', 
+                                  'Up', 'Up', 'Down', 'Left', 'Left', 'Up', 
+                                  'Right']  , 376)
     print("---------------------")
+    # print("test - all warehouses")
+    # test_all()
+    # print("---------------------")
     
