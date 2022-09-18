@@ -179,6 +179,12 @@ class SokobanPuzzle(search.Problem):
         
 
     def h(self, n):
+        '''
+        The value of the heurtistic Manhattan Distance.
+        
+        Returns the sum of the manhattan distance of 
+        each box to it's nearest target and worker to each box.
+        '''
 
         worker = n.state[0]
         boxes = list(n.state[1])
@@ -314,6 +320,10 @@ def solve_weighted_sokoban(warehouse):
 # TEST
 
 def test_check_elem_action_seq():
+    """
+    Test for check_elem_action_seq() from sanity_check.py.
+    Testing two cases.
+    """
     wh = sokoban.Warehouse()
     wh.load_warehouse("./warehouses/warehouse_01.txt")
     # first test
@@ -338,6 +348,11 @@ def test_check_elem_action_seq():
         print('But, received ');print(answer)
 
 def test_solve_weighted_sokoban(filename, expected_answer,  expected_cost):
+    
+    """
+    Test for solve_weighted_sokoban() from sanity_check.py.
+    """
+    
     wh = sokoban.Warehouse()    
     wh.load_warehouse( "./warehouses/"+ filename)
     # first test
@@ -392,7 +407,6 @@ def test_result():
    wh = sokoban.Warehouse()
    wh.load_warehouse("./warehouses/warehouse_15.txt")
    s = SokobanPuzzle(wh)  
-   #state = [wh.worker, tuple(wh.boxes)]
     
    answer = s.result(s.initial, 'Down')
    expected_answer = (6,2), ((6,3), (5,4))
@@ -403,6 +417,12 @@ def test_result():
        print('unexpected answer!  :-(\n')
        print('Expected ');print(expected_answer)
        print('But, received ');print(answer)
+       
+
+# Under is test_all() and the auxiliary function warehouse_solution(warehouse_problem).
+# These can be commented out to create a csv-file over all the warehouses
+# solved under two minutes, and a text-file of the remaining unfinished warehouses.
+
        
 # def warehouse_solution(warehouse_problem):
 #     """
